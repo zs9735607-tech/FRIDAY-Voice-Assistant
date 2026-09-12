@@ -18,6 +18,46 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Auto Fix Project & App Structure
+        run: |
+          # 1. Root settings.gradle
+          echo "rootProject.name = 'FRIDAY'" > settings.gradle
+          echo "include ':app'" >> settings.gradle
+
+          # 2. Root build.gradle
+          cat << 'EOF' > build.gradle
+          buildscript {
+              repositories { google(); mavenCentral() }
+              dependencies {
+                  classpath 'com.android.tools.build:gradle:8.1.0'
+                  classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.20'
+              }
+          }
+          allprojects {
+              repositories { google(); mavenCentral() }
+          }
+          EOF
+
+          # 3. Create app directory & app/build.gradle
+          mkdir -p app
+          cat << 'EOF' > app/build.gradle
+          plugins {
+              id 'com.android.application'
+              id 'org.jetbrains.kotlin.android'
+          }
+          android {
+              namespace 'com.example.friday'
+              compileSdk 34
+              defaultConfig {
+                  applicationId "com.example.friday"
+                  minSdk 24
+                  targetSdk 34
+                  versionCode 1
+                  versionName "1.0"
+              }
+          }
+          EOF
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
