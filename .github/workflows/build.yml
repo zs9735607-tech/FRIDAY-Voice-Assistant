@@ -18,44 +18,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Auto-Create Android Project Structure & Build
-        run: |
-          # Check & create basic Gradle project files if missing
-          if [ ! -f "settings.gradle" ] && [ ! -f "settings.gradle.kts" ]; then
-            echo "rootProject.name = 'FRIDAY'" > settings.gradle
-          fi
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
-          if [ ! -f "build.gradle" ] && [ ! -f "build.gradle.kts" ]; then
-            cat << 'EOF' > build.gradle
-          buildscript {
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-              dependencies {
-                  classpath 'com.android.tools.build:gradle:8.2.2'
-                  classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22'
-              }
-          }
-          allprojects {
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-          }
-          EOF
-          fi
+      - name: Build Debug APK
+        run: gradle assembleDebug
 
-          # Force build bypassing missing gradle wrapper
-          gradle wrapper
-          chmod +x gradlew
-          ./gradlew assembleDebug --continue || gradle assembleDebug
-
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: FRIDAY-Voice-Assistant-APK
-          path: |
-            **/build/outputs/apk/debug/*.apk
-            **/build/outputs/apk/*/*.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
