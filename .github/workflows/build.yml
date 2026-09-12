@@ -18,19 +18,26 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Auto Fix Project & App Structure
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.5'
+
+      - name: Configure Android Project
         run: |
-          # 1. Root settings.gradle
+          mkdir -p app/src/main
+          
+          # Root settings.gradle
           echo "rootProject.name = 'FRIDAY'" > settings.gradle
           echo "include ':app'" >> settings.gradle
 
-          # 2. Root build.gradle
+          # Root build.gradle
           cat << 'EOF' > build.gradle
           buildscript {
               repositories { google(); mavenCentral() }
               dependencies {
-                  classpath 'com.android.tools.build:gradle:8.1.0'
-                  classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.20'
+                  classpath 'com.android.tools.build:gradle:8.2.2'
+                  classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22'
               }
           }
           allprojects {
@@ -38,8 +45,7 @@ jobs:
           }
           EOF
 
-          # 3. Create app directory & app/build.gradle
-          mkdir -p app
+          # app/build.gradle
           cat << 'EOF' > app/build.gradle
           plugins {
               id 'com.android.application'
@@ -55,14 +61,17 @@ jobs:
                   versionCode 1
                   versionName "1.0"
               }
+              sourceSets {
+                  main {
+                      java.srcDirs = ['src/main/java', '../']
+                      manifest.srcFile 'src/main/AndroidManifest.xml'
+                  }
+              }
           }
           EOF
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
       - name: Build Debug APK
-        run: gradle assembleDebug
+        run: gradle assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
