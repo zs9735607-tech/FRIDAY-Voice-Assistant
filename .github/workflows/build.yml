@@ -21,16 +21,11 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Direct Build APK
-        run: |
-          mkdir -p output
-          aapt2 compile --dir app/src/main/res -o compiled_res.zip || true
-          gradle assembleDebug --no-daemon -Dorg.gradle.dependency.verification=off || true
+      - name: Build Debug APK
+        run: gradle assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: FRIDAY-Voice-Assistant-APK
-          path: |
-            **/build/outputs/apk/debug/*.apk
-            **/build/outputs/apk/*/*.apk
+          path: '**/*.apk'
